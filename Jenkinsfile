@@ -15,6 +15,8 @@ pipeline {
 		NEXUSIP = '172.21.2.128'
 		NEXUSPORT = '8081'
         NEXUS_LOGIN = 'nexuslogin'
+        SONARSCANNER = 'sonarscanner'
+        SONARSERVER = 'sonarserver'
     }
 
     stages {
@@ -45,11 +47,11 @@ pipeline {
         stage('CODE ANALYSIS with SONARQUBE') {
           
 		  environment {
-             scannerHome = tool 'sonarscanner'
+             scannerHome = tool "${SONARSCANNER}"
           }
 
           steps {
-            withSonarQubeEnv('sonarserver') {
+            withSonarQubeEnv("${SONARSERVER}") {
                sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=vprofile \
                    -Dsonar.projectName=vprofile-repo \
                    -Dsonar.projectVersion=1.0 \
@@ -58,6 +60,14 @@ pipeline {
                    -Dsonar.junit.reportsPath=target/surefire-reports/ \
                    -Dsonar.jacoco.reportsPath=target/jacoco.exec \
                    -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml'''
+                }
+            }
+        }
+
+        stage('SonarQube Quality Gate') {
+            steps {
+                timeout(time: 10, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
