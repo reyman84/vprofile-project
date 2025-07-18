@@ -28,13 +28,13 @@ pipeline {
         // Nexus Repositories
         RELEASE_REPO = 'vprofile-release'       // Maven 2 (hosted) repository
         SNAP_REPO = 'vprofile-snapshot'         // Maven 2 (hosted) repository
-        CENTRAL_REPO = 'vpro-maven-central'     // Maven 2 (hosted) proxy
+        CENTRAL_REPO = 'vpro-maven-central'     // Maven 2 (hosted) proxy           https://repo1.maven.org/maven2/
         NEXUS_GRP_REPO = 'vpro-maven-group'     // Maven 2 (hosted) group
 
         // Nexus configuration
         NEXUS_USER = 'admin'
         NEXUS_PASS = 'Khalsa_1699'
-        NEXUSIP = '172.21.2.33'                 // Always change when new servers are launched
+        NEXUSIP = '172.21.2.25'                 // Always change when new servers are launched
         NEXUSPORT = '8081'
         NEXUS_LOGIN = 'nexuslogin'
 
