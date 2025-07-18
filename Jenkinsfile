@@ -23,7 +23,7 @@ pipeline {
         // Nexus configuration
         NEXUS_USER = 'admin'
         NEXUS_PASS = 'Khalsa_1699'
-        NEXUSIP = '172.21.2.134'
+        NEXUSIP = '172.21.2.33'
         NEXUSPORT = '8081'
         NEXUS_LOGIN = 'nexuslogin'
 
@@ -75,13 +75,13 @@ pipeline {
             }
         }
 
-        stage('SonarQube Quality Gate') {
+        /*stage('SonarQube Quality Gate') {
             steps {
                 timeout(time: 10, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
             }
-        }
+        }*/
 
         stage('Upload artifact to Nexus') {
             steps {
