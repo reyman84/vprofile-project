@@ -1,5 +1,10 @@
 // Plugins: Git Integration, Maven Integration, Nexus Artifact Uploader, SonarQube Scanner, Build Timestamp, Slack Notification
 
+def COLOR_MAP = [
+    'SUCCESS': 'good',          // 'good' means green in slack
+    'FAILURE': 'danger'         // 'danger' means red in slack
+]
+
 pipeline {
     agent any
 
@@ -14,12 +19,14 @@ pipeline {
         SNAP_REPO = 'vprofile-snapshot'         // Maven 2 (hosted) repository
         CENTRAL_REPO = 'vpro-maven-central'     // Maven 2 (hosted) proxy
         NEXUS_GRP_REPO = 'vpro-maven-group'     // Maven 2 (hosted) group
+
         // Nexus configuration
         NEXUS_USER = 'admin'
         NEXUS_PASS = 'Khalsa_1699'
         NEXUSIP = '172.21.2.134'
         NEXUSPORT = '8081'
         NEXUS_LOGIN = 'nexuslogin'
+
         // SonarQube configuration
         SONARSCANNER = 'sonarscanner'
         SONARSERVER = 'sonarserver'
@@ -94,6 +101,14 @@ pipeline {
                     ]
                 )
             }
+        }
+    }
+    post {
+        always {
+            echo "Slack Notification"
+            slackSend channel: '#devops_practices', 
+            color: COLOR_MAP[currentBuild.currentResult],
+            message: "*${currentBuild.currentResult}:* - Job ${env.JOB_NAME} Build ${env.BUILD_NUMBER} \n  More info at: ${env.BUILD_URL}"
         }
     }
 }
