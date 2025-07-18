@@ -9,11 +9,11 @@ pipeline {
         RELEASE_REPO = 'vprofile-release'
         SNAP_REPO = 'vprofile-snapshot'
         CENTRAL_REPO = 'vpro-maven-central'
-		NEXUS_GRP_REPO = 'vpro-maven-group'
-		NEXUS_USER = 'admin'
-		NEXUS_PASS = 'Khalsa_1699'
-		NEXUSIP = '172.21.2.128'
-		NEXUSPORT = '8081'
+        NEXUS_GRP_REPO = 'vpro-maven-group'
+        NEXUS_USER = 'admin'
+        NEXUS_PASS = 'Khalsa_1699'
+        NEXUSIP = '172.21.2.134'
+        NEXUSPORT = '8081'
         NEXUS_LOGIN = 'nexuslogin'
         SONARSCANNER = 'sonarscanner'
         SONARSERVER = 'sonarserver'
@@ -45,15 +45,13 @@ pipeline {
         }
 
         stage('CODE ANALYSIS with SONARQUBE') {
-          
-		  environment {
-             scannerHome = tool "${SONARSCANNER}"
-          }
-
-          steps {
-            withSonarQubeEnv("${SONARSERVER}") {
-               sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=vprofile \
-                   -Dsonar.projectName=vprofile-repo \
+            environment {
+                scannerHome = tool "${SONARSCANNER}"
+            }
+            steps {
+                withSonarQubeEnv("${SONARSERVER}") {
+                    sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=vprofile \
+                    -Dsonar.projectName=vprofile-repo \
                    -Dsonar.projectVersion=1.0 \
                    -Dsonar.sources=src/ \
                    -Dsonar.java.binaries=target/test-classes/com/visualpathit/account/controllerTest/ \
@@ -84,8 +82,8 @@ pipeline {
                     credentialsId: "${NEXUS_LOGIN}",
                     artifacts: [
                         [artifactId: 'vproapp',
-                        classifier: '', 
-                        type: 'war', 
+                        classifier: '',
+                        type: 'war',
                         file: 'target/vprofile-v2.war']
                     ]
                 )
