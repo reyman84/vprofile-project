@@ -1,4 +1,15 @@
-// Plugins: Git Integration, Maven Integration, Nexus Artifact Uploader, SonarQube Scanner, Build Timestamp, Slack Notification
+/*
+Plugins:        Git Integration, Maven Integration, Nexus Artifact Uploader, SonarQube Scanner, Build Timestamp, Slack Notification
+Tools:          JDK 17, Maven 3.9, SonarQube Scanner 4.7.0.2747
+Credentials:    sonartoken, slacktoken, gitlogin, nexuslogin
+Other Setup:    Git Webhook, SonarQube Webhook, SonarQube Quality Gate, Slack configuration, Git Repository
+
+Slack Configuration: 
+Email:      devopspractice@myyahoo.com
+Workspace:  Accenture (accenture-3hn2465)
+Channel:    devops_practices
+Token:      sLxuMSHJ3uCrisWYGPZPFyow
+*/
 
 def COLOR_MAP = [
     'SUCCESS': 'good',          // 'good' means green in slack
@@ -23,7 +34,7 @@ pipeline {
         // Nexus configuration
         NEXUS_USER = 'admin'
         NEXUS_PASS = 'Khalsa_1699'
-        NEXUSIP = '172.21.2.33'
+        NEXUSIP = '172.21.2.33'                 // Always change when new servers are launched
         NEXUSPORT = '8081'
         NEXUS_LOGIN = 'nexuslogin'
 
