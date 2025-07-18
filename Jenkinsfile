@@ -97,7 +97,7 @@ pipeline {
                         [artifactId: 'vproapp',
                         classifier: '',
                         type: 'war',
-                        file: 'target/vprofile-.war']
+                        file: 'target/vprofile-v2.war']
                     ]
                 )
             }
