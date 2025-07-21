@@ -34,7 +34,7 @@ pipeline {
         // Nexus configuration
         NEXUS_USER = 'admin'
         NEXUS_PASS = 'Khalsa_1699'
-        NEXUSIP = '172.21.2.90'                 // Always change when new servers are launched
+        NEXUSIP = '172.21.2.167'                 // Always change when new servers are launched
         NEXUSPORT = '8081'
         NEXUS_LOGIN = 'nexuslogin'
 
