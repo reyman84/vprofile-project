@@ -21,7 +21,7 @@ pipeline {
 
     tools {
         maven "myMVN"
-        #maven "MAVEN3.9"
+        //maven "MAVEN3.9"
         jdk "JDK17"
     }
 
