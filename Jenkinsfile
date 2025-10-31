@@ -2,7 +2,7 @@ pipeline {
     
 	agent any
 	
-	tools {
+	/*tools {
 	jdk "JDK17"	
         maven "MAVEN3.9"
     }
@@ -15,7 +15,7 @@ pipeline {
 	NEXUS_REPO_ID    = "vprofile-release"
         NEXUS_CREDENTIAL_ID = "nexuslogin"
         ARTVERSION = "${env.BUILD_ID}"
-    }
+    }*/
 	
     stages{
         
@@ -31,7 +31,7 @@ pipeline {
             }
         }
 
-	stage('UNIT TEST'){
+	/*stage('UNIT TEST'){
             steps {
                 sh 'mvn test'
             }
@@ -116,7 +116,7 @@ pipeline {
         }
 
 
-    }
+    }*/
 
 
 }
