@@ -5,7 +5,7 @@ pipeline {
 	tools {
         maven "maven3"
     }
-*/	
+
     environment {
         NEXUS_VERSION = "nexus3"
         NEXUS_PROTOCOL = "http"
@@ -14,9 +14,15 @@ pipeline {
 	NEXUS_REPO_ID    = "vprofile-release"
         NEXUS_CREDENTIAL_ID = "nexuslogin"
         ARTVERSION = "${env.BUILD_ID}"
-    }
+    }*/
 	
     stages{
+		stage ('Fetch Code') {
+            steps {
+                git branch: 'docker',
+                url: 'https://github.com/hkhcoder/vprofile-project.git'
+            }
+        }
         
         stage('BUILD'){
             steps {
@@ -30,7 +36,7 @@ pipeline {
             }
         }
 
-	stage('UNIT TEST'){
+	/*stage('UNIT TEST'){
             steps {
                 sh 'mvn test'
             }
@@ -112,7 +118,7 @@ pipeline {
                     }
                 }
             }
-        }
+        }*/
 
 
     }
