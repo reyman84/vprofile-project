@@ -18,6 +18,12 @@ pipeline {
     }*/
 	
     stages{
+		stage ('Fetch Code') {
+            steps {
+                git branch: 'docker',
+                url: 'https://github.com/hkhcoder/vprofile-project.git'
+            }
+        }
         
         stage('BUILD'){
             steps {
