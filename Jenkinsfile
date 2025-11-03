@@ -11,17 +11,17 @@ Channel:    devops_practices
 Token:      sLxuMSHJ3uCrisWYGPZPFyow
 */
 
-def COLOR_MAP = [
+/*def COLOR_MAP = [
     'SUCCESS': 'good',          // 'good' means green in slack
     'FAILURE': 'danger'         // 'danger' means red in slack
-]
+]*/
 
 pipeline {
     agent any
 
     tools {
-        maven "MAVEN3.9"
-        jdk "JDK17"
+        maven "myMVN"
+        jdk "myJDK_ubuntu"
     }
 
     environment {
@@ -32,7 +32,7 @@ pipeline {
         NEXUS_GRP_REPO = 'vpro-maven-group'     // Maven 2 (hosted) group
 
         // Nexus configuration
-        NEXUSIP = '172.21.2.73'                 // Always change when new servers are launched
+        NEXUSIP = '172.21.2.124'                 // Always change when new servers are launched
         NEXUSPORT = '8081'
         NEXUS_LOGIN = 'nexuslogin'
 
@@ -42,7 +42,7 @@ pipeline {
     }
 
     stages {
-        stage('Build'){
+        stage('Build') {
             steps {
                 sh 'mvn -s settings.xml -DskipTests install'
             }
@@ -94,12 +94,20 @@ pipeline {
 
         stage('Upload artifact to Nexus') {
             steps {
+                script {
+                    env.APP_VERSION = "${env.BUILD_ID}-" + sh(
+                        script: "date -u +%Y%m%d%H%M%S",
+                        returnStdout: true
+                    ).trim()
+
+                    echo "Generated APP_VERSION = ${env.APP_VERSION}"
+                }
                 nexusArtifactUploader(
                     nexusVersion: 'nexus3',
                     protocol: 'http',
                     nexusUrl: "${NEXUSIP}:${NEXUSPORT}",
                     groupId: 'QA',
-                    version: "${env.Build_ID}-${env.BUILD_TIMESTAMP}",
+                    version: "${APP_VERSION}",
                     repository: "${RELEASE_REPO}",
                     credentialsId: "${NEXUS_LOGIN}",
                     artifacts: [
@@ -111,13 +119,48 @@ pipeline {
                 )
             }
         }
+
+        stage('Deploy to Staging') {
+            steps {
+                echo "Deploying version ${APP_VERSION} to staging..."
+                sh """
+                    ansible-playbook \
+                    -i ansible/inventory/stage \
+                    ansible/deploy.yml \
+                    --extra-vars "version=${APP_VERSION}"
+                """
+            }
+        }
+
+        stage('Manual Approval') {
+            steps {
+                timeout(time: 1, unit: 'HOURS') {
+                    input message: "Approve deployment to PRODUCTION?",
+                           ok: "Proceed",
+                           submitter: "Ramandeep Singh,admin"
+                }
+            }
+        }
+
+        stage('Deploy to Production') {
+            steps {
+                echo "Deploying version ${APP_VERSION} to production..."
+                sh """
+                    ansible-playbook \
+                    -i ansible/inventory/prod \
+                    ansible/deploy.yml \
+                    --extra-vars "version=${APP_VERSION}"
+                """
+            }
+        }
     }
-    post {
+    
+    /*post {
         always {
             echo "Slack Notification"
             slackSend channel: '#devops_practices', 
             color: COLOR_MAP[currentBuild.currentResult],
             message: "*${currentBuild.currentResult}:* - Job ${env.JOB_NAME} Build ${env.BUILD_NUMBER} \n  More info at: ${env.BUILD_URL}"
         }
-    }
+    }*/
 }
