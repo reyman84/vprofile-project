@@ -4,22 +4,50 @@
 
   vars:
     version: "{{ version }}"
+    tomcat_version: "9.0.89"
+    tomcat_install_dir: "/opt/tomcat"
 
   tasks:
-    - name: Install tomcat
+
+    - name: Install Java
       apt:
-        name: tomcat9
+        name: openjdk-17-jdk
         state: present
         update_cache: yes
 
-    - name: Download WAR from Nexus
+    - name: Create Tomcat directory
+      file:
+        path: "{{ tomcat_install_dir }}"
+        state: directory
+
+    - name: Download Tomcat archive
+      get_url:
+        url: "https://downloads.apache.org/tomcat/tomcat-9/v{{ tomcat_version }}/bin/apache-tomcat-{{ tomcat_version }}.tar.gz"
+        dest: "/tmp/apache-tomcat.tar.gz"
+
+    - name: Extract Tomcat archive
+      unarchive:
+        src: "/tmp/apache-tomcat.tar.gz"
+        dest: "{{ tomcat_install_dir }}"
+        remote_src: yes
+        extra_opts: [--strip-components=1]
+
+    - name: Set permissions
+      file:
+        path: "{{ tomcat_install_dir }}"
+        owner: ubuntu
+        group: ubuntu
+        recurse: yes
+
+    - name: Deploy WAR file
       get_url:
         url: "http://172.21.2.124:8081/repository/vprofile-release/QA/vproapp/{{ version }}/vproapp-{{ version }}.war"
-        dest: /var/lib/tomcat9/webapps/vprofile.war
+        dest: "{{ tomcat_install_dir }}/webapps/vprofile.war"
         mode: '0644'
 
     - name: Restart Tomcat
-      systemd:
-        name: tomcat9
-        state: restarted
+      shell: |
+        {{ tomcat_install_dir }}/bin/shutdown.sh || true
+        sleep 3
+        {{ tomcat_install_dir }}/bin/startup.sh
 
