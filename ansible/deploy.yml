@@ -1,8 +1,12 @@
+---
 - hosts: appservers
   become: yes
 
+  vars:
+    version: "{{ version }}"
+
   tasks:
-    - name Install tomcat
+    - name: Install tomcat
       apt:
         name: tomcat9
         state: present
