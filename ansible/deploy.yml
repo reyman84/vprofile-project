@@ -1,0 +1,21 @@
+- hosts: appservers
+  become: yes
+
+  tasks:
+    - name Install tomcat
+      apt:
+        name: tomcat9
+        state: present
+        update_cache: yes
+
+    - name: Download WAR from Nexus
+      get_url:
+        url: "http://172.21.2.124:8081/repository/vprofile-release/QA/vproapp/{{ version }}/vproapp-{{ version }}.war"
+        dest: /var/lib/tomcat9/webapps/vprofile.war
+        mode: '0644'
+
+    - name: Restart Tomcat
+      systemd:
+        name: tomcat9
+        state: restarted
+
