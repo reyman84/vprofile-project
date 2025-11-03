@@ -32,8 +32,6 @@ pipeline {
         NEXUS_GRP_REPO = 'vpro-maven-group'     // Maven 2 (hosted) group
 
         // Nexus configuration
-        NEXUS_USER = 'admin'
-        NEXUS_PASS = 'Khalsa_1699'
         NEXUSIP = '172.21.2.73'                 // Always change when new servers are launched
         NEXUSPORT = '8081'
         NEXUS_LOGIN = 'nexuslogin'
