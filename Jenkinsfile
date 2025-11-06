@@ -42,6 +42,18 @@ pipeline {
     }
 
     stages {
+
+        stage ('AuditTools') {
+            steps {
+                sh '''
+                mvn --version
+                java -version
+                jenkins --version
+                git --version
+                '''
+            }
+
+        }
         stage('Build') {
             steps {
                 sh 'mvn -s settings.xml -DskipTests install'
