@@ -183,12 +183,22 @@ pipeline {
 
         stage('Cleanup Old Artifacts') {
             steps {
-                sh '''
-                    echo "Cleaning up old artifacts in Nexus..."
-                    # Add cleanup commands here
-                '''
+                sh """
+                echo 'Cleaning up old Nexus artifacts...'
+                
+                curl -X POST -u ${NEXUS_LOGIN}:${NEXUS_PASSWORD} \
+                -H 'Content-Type: application/json' \
+                -d '{
+                    "repository": "vprofile-release",
+                    "format": "maven2",
+                    "group": "QA",
+                    "name": "vproapp"
+                  }' \
+                http://${NEXUSIP}:${NEXUSPORT}/service/rest/v1/components?repository=vprofile-release
+            """
             }
         }
+
     }
     
     /*post {
