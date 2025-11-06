@@ -41,7 +41,7 @@
 
     - name: Deploy WAR file
       get_url:
-        url: "http://172.21.2.124:8081/repository/vprofile-release/QA/vproapp/{{ version }}/vproapp-{{ version }}.war"
+        url: "http://172.21.2.161:8081/repository/vprofile-release/QA/vproapp/{{ version }}/vproapp-{{ version }}.war"
         dest: "{{ tomcat_install_dir }}/webapps/vprofile.war"
         mode: '0644'
 
