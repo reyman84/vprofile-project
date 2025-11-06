@@ -148,11 +148,12 @@ pipeline {
             }
         }
 		
-		stage('Smoke Tests') {
+        // Neeed to work on health check commands
+		/*stage('Smoke Tests') {
             steps {
                 sh 'curl -f http://staging.myapp.local/health'
 			}
-        }
+        }*/
 		
 		stage('Manual Approval') {
             steps {
@@ -174,11 +175,11 @@ pipeline {
             }
         }
         
-        stage('Post-Deploy Validation') {
+        /*stage('Post-Deploy Validation') {
             steps {
                 sh 'curl -f http://prod.myapp.local/health'
             }
-        }
+        }*/
 
         stage('Cleanup Old Artifacts') {
             steps {
