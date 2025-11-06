@@ -140,7 +140,9 @@ pipeline {
 		stage('Blue-Green Deploy - Staging') {
             steps {
                 script {
-                    sh "ansible-playbook -i ansible/inventory/stage ansible/deploy.yml --extra-vars "version=${APP_VERSION} env=stage""
+                    sh """
+                        ansible-playbook -i ansible/inventory/stage ansible/deploy.yml --extra-vars "version=${APP_VERSION} env=stage"
+                    """
                 }
             }
         }
@@ -164,11 +166,12 @@ pipeline {
 		stage('Blue-Green Deploy - Production') {
             steps {
                 script {
-                    sh "ansible-playbook -i ansible/inventory/prod ansible/deploy.yml --extra-vars "version=${APP_VERSION} env=prod""
+                    sh """
+                        ansible-playbook -i ansible/inventory/prod ansible/deploy.yml --extra-vars "version=${APP_VERSION} env=prod"
+                    """
+                }
+            }
         }
-    }
-}
-
         
         stage('Post-Deploy Validation') {
             steps {
