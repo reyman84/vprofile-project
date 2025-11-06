@@ -21,7 +21,7 @@ pipeline {
 
     tools {
         maven "myMVN"
-        jdk "myJDK_ubuntu"
+        jdk "myJDK"
     }
 
     environment {
@@ -32,7 +32,7 @@ pipeline {
         NEXUS_GRP_REPO = 'vpro-maven-group'     // Maven 2 (hosted) group
 
         // Nexus configuration
-        NEXUSIP = '172.21.2.25'                 // Always change when new servers are launched
+        NEXUSIP = '172.21.2.161'                 // Always change when new servers are launched
         NEXUSPORT = '8081'
         NEXUS_LOGIN = 'nexuslogin'
 
@@ -43,17 +43,31 @@ pipeline {
 
     stages {
 
-        stage ('AuditTools') {
+        stage ('Ansible Installation') {
             steps {
                 sh '''
-                mvn --version
-                java -version
-                jenkins --version
-                git --version
+                    echo "Checking Ansible installation..."
+                    if ! command -v ansible &> /dev/null
+                    then
+                        echo "Ansible not found, installing..."
+                        sudo apt update
+                        sudo apt install software-properties-common -y
+                        sudo add-apt-repository --yes --update ppa:ansible/ansible
+                        sudo apt install ansible -y
+                    else
+                        echo "Ansible is already installed."
+                    fi
+                    ansible --version
                 '''
             }
-
         }
+
+        stage ('AuditTools') {
+            steps {
+                auditTools()
+            }
+        }
+        
         stage('Build') {
             steps {
                 sh 'mvn -s settings.xml -DskipTests install'
@@ -65,46 +79,37 @@ pipeline {
                 }
             }
         }
-
-        stage('Unit Tests') {
+		
+		stage('Unit Tests') {
             steps {
                 sh 'mvn -s settings.xml test'
             }
         }
-
-        stage('Checkstyle Analysis') {
+		
+		stage('Checkstyle Analysis') {
             steps {
                 sh 'mvn -s settings.xml checkstyle:checkstyle'
             }
         }
-
-        stage('CODE ANALYSIS with SONARQUBE') {
+		
+		stage('CODE ANALYSIS with SONARQUBE') {
             environment {
                 scannerHome = tool "${SONARSCANNER}"
             }
             steps {
-                withSonarQubeEnv("${SONARSERVER}") {
-                    sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=vprofile \
-                    -Dsonar.projectName=vprofile-repo \
-                   -Dsonar.projectVersion=1.0 \
-                   -Dsonar.sources=src/ \
-                   -Dsonar.java.binaries=target/test-classes/com/visualpathit/account/controllerTest/ \
-                   -Dsonar.junit.reportsPath=target/surefire-reports/ \
-                   -Dsonar.jacoco.reportsPath=target/jacoco.exec \
-                   -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml'''
-                }
+				sonarPush()
             }
         }
-
-        stage('SonarQube Quality Gate') {
+		
+		stage('SonarQube Quality Gate') {
             steps {
                 timeout(time: 10, unit: 'MINUTES') {
                     waitForQualityGate abortPipeline: true
                 }
             }
         }
-
-        stage('Upload artifact to Nexus') {
+		
+		stage('Upload artifact to Nexus') {
             steps {
                 script {
                     env.APP_VERSION = "${env.BUILD_ID}-" + sh(
@@ -131,20 +136,21 @@ pipeline {
                 )
             }
         }
-
-        stage('Deploy to Staging') {
+		
+		stage('Blue-Green Deploy - Staging') {
             steps {
                 echo "Deploying version ${APP_VERSION} to staging..."
-                sh """
-                    ansible-playbook \
-                    -i ansible/inventory/stage \
-                    ansible/deploy.yml \
-                    --extra-vars "version=${APP_VERSION}"
-                """
+                ansible.play(playbook: 'ansible/deploy-bluegreen.yml', inventory: 'ansible/inventory/stage', extraVars: [version: env.APP_VERSION, env: 'stage'])
             }
         }
-
-        stage('Manual Approval') {
+		
+		stage('Smoke Tests') {
+            steps {
+                sh 'curl -f http://staging.myapp.local/health'
+			}
+        }
+		
+		stage('Manual Approval') {
             steps {
                 timeout(time: 1, unit: 'HOURS') {
                     input message: "Approve deployment to PRODUCTION?",
@@ -153,16 +159,25 @@ pipeline {
                 }
             }
         }
-
-        stage('Deploy to Production') {
+		
+		stage('Blue-Green Deploy - Production') {
             steps {
-                echo "Deploying version ${APP_VERSION} to production..."
-                sh """
-                    ansible-playbook \
-                    -i ansible/inventory/prod \
-                    ansible/deploy.yml \
-                    --extra-vars "version=${APP_VERSION}"
-                """
+                ansible.play(playbook: 'ansible/deploy-bluegreen.yml', inventory: 'ansible/inventory/prod', extraVars: [version: env.APP_VERSION, env: 'prod'])
+            }
+        }
+        
+        stage('Post-Deploy Validation') {
+            steps {
+                sh 'curl -f http://prod.myapp.local/health'
+            }
+        }
+
+        stage('Cleanup Old Artifacts') {
+            steps {
+                sh '''
+                    echo "Cleaning up old artifacts in Nexus..."
+                    # Add cleanup commands here
+                '''
             }
         }
     }
@@ -175,4 +190,27 @@ pipeline {
             message: "*${currentBuild.currentResult}:* - Job ${env.JOB_NAME} Build ${env.BUILD_NUMBER} \n  More info at: ${env.BUILD_URL}"
         }
     }*/
+}
+
+void auditTools () {
+    sh '''
+        mvn --version; 
+        java -version
+        jenkins --version
+        git --version
+        ansible --version
+    '''
+}
+
+void sonarPush () {
+    withSonarQubeEnv("${SONARSERVER}") {
+        sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=vprofile \
+        -Dsonar.projectName=vprofile-repo \
+        -Dsonar.projectVersion=1.0 \
+        -Dsonar.sources=src/ \
+        -Dsonar.java.binaries=target/test-classes/com/visualpathit/account/controllerTest/ \
+        -Dsonar.junit.reportsPath=target/surefire-reports/ \
+        -Dsonar.jacoco.reportsPath=target/jacoco.exec \
+        -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml'''
+	}
 }
