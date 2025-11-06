@@ -183,22 +183,39 @@ pipeline {
 
         stage('Cleanup Old Artifacts') {
             steps {
-                sh """
-                echo 'Cleaning up old Nexus artifacts...'
-                
-                curl -X POST -u ${NEXUS_LOGIN}:${NEXUS_PASSWORD} \
-                -H 'Content-Type: application/json' \
-                -d '{
-                    "repository": "vprofile-release",
-                    "format": "maven2",
-                    "group": "QA",
-                    "name": "vproapp"
-                  }' \
-                http://${NEXUSIP}:${NEXUSPORT}/service/rest/v1/components?repository=vprofile-release
-            """
+                withCredentials([usernamePassword(
+                    credentialsId: "${NEXUS_LOGIN}",
+                    usernameVariable: 'NEXUS_USER',
+                    passwordVariable: 'NEXUS_PASS'
+                    )]) {
+                        sh """
+                        echo 'Cleaning old artifacts in Nexus...'
+                        
+                        REPO=vprofile-release
+                        GROUP=QA
+                        ARTIFACT=vproapp
+                        
+                        curl -s -u $NEXUS_USER:$NEXUS_PASS \
+                        "http://${NEXUSIP}:${NEXUSPORT}/service/rest/v1/components?repository=$REPO" \
+                        | jq -r '.items[] | select(.group=="'$GROUP'" and .name=="'$ARTIFACT'") | .version' \
+                        | sort -r > versions.txt
+                        
+                        KEEP=3
+                        TO_DELETE=\$(tail -n +$((KEEP+1)) versions.txt)
+
+                        for VER in \$TO_DELETE; do
+                            echo "Deleting version \$VER"
+                            ID=\$(curl -s -u $NEXUS_USER:$NEXUS_PASS \
+                            "http://${NEXUSIP}:${NEXUSPORT}/service/rest/v1/components?repository=$REPO" \
+                            | jq -r '.items[] | select(.version=="'$VER'") | .id')
+
+                        curl -X DELETE -u $NEXUS_USER:$NEXUS_PASS \
+                        "http://${NEXUSIP}:${NEXUSPORT}/service/rest/v1/components/\$ID"
+                    done
+                    """
+                }
             }
         }
-
     }
     
     /*post {
