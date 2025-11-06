@@ -9,16 +9,24 @@
 
   tasks:
 
-    - name: Install Java
+    - name: Install Java 17
       apt:
         name: openjdk-17-jdk
         state: present
         update_cache: yes
 
+    - name: Create tomcat user
+      user:
+        name: tomcat
+        home: "{{ tomcat_install_dir }}"
+        shell: /bin/false
+
     - name: Create Tomcat directory
       file:
         path: "{{ tomcat_install_dir }}"
         state: directory
+        owner: tomcat
+        group: tomcat
 
     - name: Download Tomcat archive
       get_url:
@@ -32,11 +40,17 @@
         remote_src: yes
         extra_opts: [--strip-components=1]
 
-    - name: Set permissions
+    - name: Ensure Tomcat scripts are executable
+      file:
+        path: "{{ tomcat_install_dir }}/bin"
+        mode: "0755"
+        recurse: yes
+
+    - name: Set Tomcat permissions
       file:
         path: "{{ tomcat_install_dir }}"
-        owner: ubuntu
-        group: ubuntu
+        owner: tomcat
+        group: tomcat
         recurse: yes
 
     - name: Deploy WAR file
@@ -45,9 +59,36 @@
         dest: "{{ tomcat_install_dir }}/webapps/vprofile.war"
         mode: '0644'
 
-    - name: Restart Tomcat
-      shell: |
-        {{ tomcat_install_dir }}/bin/shutdown.sh || true
-        sleep 3
-        {{ tomcat_install_dir }}/bin/startup.sh
+    - name: Install Tomcat service file
+      copy:
+        dest: /etc/systemd/system/tomcat.service
+        content: |
+          [Unit]
+          Description=Apache Tomcat 9
+          After=network.target
 
+          [Service]
+          Type=forking
+          User=tomcat
+          Group=tomcat
+          Environment=JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+          Environment=CATALINA_HOME={{ tomcat_install_dir }}
+          Environment=CATALINA_BASE={{ tomcat_install_dir }}
+
+          ExecStart={{ tomcat_install_dir }}/bin/startup.sh
+          ExecStop={{ tomcat_install_dir }}/bin/shutdown.sh
+
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+
+    - name: Restart Tomcat service
+      systemd:
+        name: tomcat
+        state: restarted
+        enabled: yes
