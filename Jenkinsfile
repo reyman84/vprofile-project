@@ -131,7 +131,7 @@ pipeline {
             }
         }
 		
-		stage('Blue-Green Deploy - Staging') {
+		/*stage('Blue-Green Deploy - Staging') {
             steps {
                 script {
                     sh """
@@ -139,7 +139,7 @@ pipeline {
                     """
                 }
             }
-        }
+        }*/
 		
         // Neeed to work on health check commands
 		/*stage('Smoke Tests') {
@@ -148,7 +148,7 @@ pipeline {
 			}
         }*/
 		
-		stage('Manual Approval') {
+		/*stage('Manual Approval') {
             steps {
                 timeout(time: 1, unit: 'HOURS') {
                     input message: "Approve deployment to PRODUCTION?",
@@ -156,9 +156,9 @@ pipeline {
                            submitter: "Ramandeep Singh,admin"
                 }
             }
-        }
+        }*/
 		
-		stage('Blue-Green Deploy - Production') {
+		/*stage('Blue-Green Deploy - Production') {
             steps {
                 script {
                     sh """
@@ -166,7 +166,7 @@ pipeline {
                     """
                 }
             }
-        }
+        }*/
         
         /*stage('Post-Deploy Validation') {
             steps {
