@@ -52,7 +52,7 @@ pipeline {
 
         stage('Ansible Installation') {
             steps {
-                void ansibleInstall () 
+                ansibleInstall () 
             }
         }
 
