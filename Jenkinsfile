@@ -16,6 +16,13 @@ Token:      sLxuMSHJ3uCrisWYGPZPFyow
     'FAILURE': 'danger'         // 'danger' means red in slack
 ]*/
 
+library identifier: 'jenkins-shared-libarary@main',
+        retriever: modernSCM([
+            $class: 'GitSCMSource',
+            remote: 'https://github.com/reyman84/jenkins-shared-libarary.git'
+        ])
+
+
 pipeline {
     agent any
 
@@ -45,21 +52,7 @@ pipeline {
 
         stage('Ansible Installation') {
             steps {
-                sh """
-                    echo "Checking Ansible installation..."
-                    
-                    if command -v ansible >/dev/null 2>&1; then
-                        echo "Ansible is already installed."
-                    else
-                        echo "⏳ Installing Ansible..."
-                        sudo apt update -y
-                        sudo apt install software-properties-common -y
-                        sudo add-apt-repository --yes --update ppa:ansible/ansible
-                        sudo apt install ansible -y
-                    fi
-                    echo "Installed Ansible Version:"
-                    ansible --version
-                """
+                void ansibleInstall () 
             }
         }
 
@@ -94,11 +87,11 @@ pipeline {
         }
 		
 		stage('CODE ANALYSIS with SONARQUBE') {
-            environment {
-                scannerHome = tool "${SONARSCANNER}"
-            }
             steps {
-				sonarPush()
+                script {
+                    def scannerHome = tool "${SONARSCANNER}"
+                    sonarPush(env.SONARSERVER, scannerHome)
+                }
             }
         }
 		
@@ -190,27 +183,4 @@ pipeline {
             message: "*${currentBuild.currentResult}:* - Job ${env.JOB_NAME} Build ${env.BUILD_NUMBER} \n  More info at: ${env.BUILD_URL}"
         }
     }*/
-}
-
-void auditTools () {
-    sh '''
-        mvn --version; 
-        java -version
-        jenkins --version
-        git --version
-        ansible --version
-    '''
-}
-
-void sonarPush () {
-    withSonarQubeEnv("${SONARSERVER}") {
-        sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=vprofile \
-        -Dsonar.projectName=vprofile-repo \
-        -Dsonar.projectVersion=1.0 \
-        -Dsonar.sources=src/ \
-        -Dsonar.java.binaries=target/test-classes/com/visualpathit/account/controllerTest/ \
-        -Dsonar.junit.reportsPath=target/surefire-reports/ \
-        -Dsonar.jacoco.reportsPath=target/jacoco.exec \
-        -Dsonar.java.checkstyle.reportPaths=target/checkstyle-result.xml'''
-	}
 }
