@@ -1,33 +1,3 @@
-/*Plugins:
-    Git Integration, Maven Integration, Nexus Artifact Uploader, SonarQube Scanner, Build Timestamp Plugin, Slack Notification Plugin, Pipeline: GitHub, Pipeline: Shared Libraries
-
-Tools:
-    JDK 17, Maven 3.9.x, SonarQube Scanner 4.7.0.2747
-
-Credentials (Jenkins Credentials Store):
-    - sonartoken       (SonarQube token)
-    - slacktoken       (Slack Bot/User Token)
-    - gitlogin         (Git repository credentials if private)
-    - nexuslogin       (Nexus repository credentials)
-
-External Integrations:
-    - Git Webhook (push events → Jenkins)
-    - SonarQube Webhook (quality gate → Jenkins)
-    - SonarQube Quality Gate configuration
-    - Nexus Repository Manager (Nexus3)
-    - Slack Workspace integration
-
-Shared Library:
-    - Identifier: jenkins-shared-libarary@main
-    - SCM: GitHub (https://github.com/reyman84/jenkins-shared-libarary.git)
-
-Slack Configuration:
-    Email:      devopspractice@myyahoo.com
-    Workspace:  Accenture (accenture-3hn2465)
-    Channel:    devops_practices
-    Token:      sLxuMSHJ3uCrisWYGPZPFyow
-*/
-
 /*def COLOR_MAP = [
     'SUCCESS': 'good',          // 'good' means green in slack
     'FAILURE': 'danger'         // 'danger' means red in slack
@@ -39,9 +9,10 @@ library identifier: 'jenkins-shared-libarary@main',
             remote: 'https://github.com/reyman84/jenkins-shared-libarary.git'
         ])
 
-
 pipeline {
-    agent any
+    agent {
+        label 'linux'
+    }
 
     tools {
         maven "myMVN"
