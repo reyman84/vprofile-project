@@ -16,7 +16,12 @@ pipeline {
 
     tools {
         maven "myMVN"
-        jdk "myJDK"
+        
+        // JDK for Ubuntu nodes
+        //jdk "myJDK"
+
+        //JDK for Amazon linux nodes
+        jdk "myJDK_Linux"
     }
 
     environment {
