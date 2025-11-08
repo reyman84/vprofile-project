@@ -10,9 +10,8 @@ library identifier: 'jenkins-shared-libarary@main',
         ])
 
 pipeline {
-    agent {
-        label 'linux'
-    }
+
+    agent any
 
     tools {
         maven "myMVN"
