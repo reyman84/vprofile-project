@@ -11,16 +11,15 @@ library identifier: 'jenkins-shared-libarary@main',
 
 pipeline {
 
-    agent any
+    agent {
+        label 'jenkins-slave'
+    }
 
     tools {
         maven "myMVN"
         
-        // JDK for Ubuntu nodes
+        // JDK for Ubuntu
         jdk "myJDK"
-
-        //JDK for Amazon linux nodes
-        //jdk "myJDK_Linux"
     }
 
     environment {
@@ -31,7 +30,7 @@ pipeline {
         NEXUS_GRP_REPO = 'vpro-maven-group'     // Maven 2 (hosted) group
 
         // Nexus configuration
-        NEXUSIP = '172.21.2.49'                 // Always change when new servers are launched
+        NEXUSIP = '172.21.2.200'                 // Always change when new servers are launched
         NEXUSPORT = '8081'
         NEXUS_LOGIN = 'nexuslogin'
 
