@@ -1,11 +1,12 @@
 pipeline {
+	agent { label 'maven_agent' }
     
-	agent any
-/*	
+/*	agent any
+	
 	tools {
         maven "maven3"
     }
-*/	
+	
     environment {
         NEXUS_VERSION = "nexus3"
         NEXUS_PROTOCOL = "http"
@@ -14,7 +15,7 @@ pipeline {
 	NEXUS_REPO_ID    = "vprofile-release"
         NEXUS_CREDENTIAL_ID = "nexuslogin"
         ARTVERSION = "${env.BUILD_ID}"
-    }
+    }*/
 	
     stages{
         
@@ -53,7 +54,7 @@ pipeline {
             }
         }
 
-        stage('CODE ANALYSIS with SONARQUBE') {
+        /*stage('CODE ANALYSIS with SONARQUBE') {
           
 		  environment {
              scannerHome = tool 'sonarscanner4'
@@ -112,10 +113,6 @@ pipeline {
                     }
                 }
             }
-        }
-
-
+        }*/
     }
-
-
 }
